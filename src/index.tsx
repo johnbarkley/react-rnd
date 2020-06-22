@@ -127,7 +127,12 @@ export interface Props {
   };
   size?: Size;
   resizeGrid?: Grid;
-  bounds?: string;
+  bounds?: string | {
+    top: number;
+    right: number;
+    bottom: number;
+    left: number;
+  };
   onMouseDown?: (e: MouseEvent) => void;
   onMouseUp?: (e: MouseEvent) => void;
   onResizeStart?: RndResizeStartCallback;
@@ -316,8 +321,10 @@ export class Rnd extends React.PureComponent<Props, State> {
       const right = (window.innerWidth - this.resizable.size.width * scale) / scale + left;
       const bottom = (window.innerHeight - this.resizable.size.height * scale) / scale + top;
       return this.setState({ bounds: { top, right, bottom, left } });
+    } else if (typeof this.props.bounds !== "string") {
+      return this.setState({ bounds: this.props.bounds as any });
     } else {
-      boundary = document.querySelector(this.props.bounds);
+      boundary = document.querySelector(this.props.bounds as string);
     }
     if (!(boundary instanceof HTMLElement) || !(parent instanceof HTMLElement)) {
       return;
@@ -372,7 +379,7 @@ export class Rnd extends React.PureComponent<Props, State> {
     this.setState({
       original: pos,
     });
-    if (this.props.bounds) {
+    if (this.props.bounds && typeof this.props.bounds === "string") {
       const parent = this.getParent();
       let boundary;
       if (this.props.bounds === "parent") {
@@ -444,6 +451,11 @@ export class Rnd extends React.PureComponent<Props, State> {
           });
         }
       }
+    } else if (this.props.bounds && typeof this.props.bounds !== "string") {
+      this.setState({
+        maxWidth: this.props.maxWidth,
+        maxHeight: this.props.maxHeight,
+      });
     } else {
       this.setState({
         maxWidth: this.props.maxWidth,
